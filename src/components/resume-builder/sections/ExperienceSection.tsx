@@ -1,8 +1,8 @@
 import { useResume } from '@/contexts/ResumeContext';
 import { FloatingInput } from '../FloatingInput';
-import { Plus, X, Minus, PlusCircle, AlertTriangle, Check } from 'lucide-react';
+import { Plus, X, Minus, PlusCircle, AlertTriangle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
 import { 
   formatBulletText, 
   analyzeBullet, 

@@ -90,11 +90,52 @@ export function formatDateRange(start: string, end: string): string {
 
 /**
  * Format individual date string
+ * - Single year (2023): returns as-is
+ * - Year range (2020-2023): converts to "2020 – 2023" with en-dash
+ * - Year-month (2023-01): converts to "2023 – 01" with en-dash
+ * - Full ISO date (2023-01-15): formats as localized date string
  */
 export function formatDate(date: string): string {
   if (!date) return '';
-  // Replace hyphens with en-dash for ranges within the date
-  return date.replace(/-/g, ' – ');
+  
+  const trimmed = date.trim();
+  
+  // Single year (e.g., "2023")
+  if (/^\d{4}$/.test(trimmed)) {
+    return trimmed;
+  }
+  
+  // Year range (e.g., "2020-2023")
+  if (/^\d{4}-\d{4}$/.test(trimmed)) {
+    return trimmed.replace('-', ' – ');
+  }
+  
+  // Year-month (e.g., "2023-01")
+  if (/^\d{4}-\d{2}$/.test(trimmed)) {
+    const [year, month] = trimmed.split('-');
+    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthIndex = parseInt(month, 10) - 1;
+    if (monthIndex >= 0 && monthIndex < 12) {
+      return `${monthNames[monthIndex]} ${year}`;
+    }
+    return trimmed.replace('-', ' – ');
+  }
+  
+  // Full ISO date (e.g., "2023-01-15")
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    const parsed = new Date(trimmed);
+    if (!isNaN(parsed.getTime())) {
+      return new Intl.DateTimeFormat('en-US', { 
+        year: 'numeric', 
+        month: 'short', 
+        day: 'numeric' 
+      }).format(parsed);
+    }
+    return trimmed;
+  }
+  
+  // Return as-is for any other format
+  return trimmed;
 }
 
 /**
