@@ -1,23 +1,49 @@
 import { useResume } from '@/contexts/ResumeContext';
 import { FloatingInput } from '../FloatingInput';
-import { Plus, X, Minus, PlusCircle } from 'lucide-react';
+import { Plus, X, Minus, PlusCircle, AlertTriangle, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
+import { 
+  formatBulletText, 
+  analyzeBullet, 
+  suggestTenseCorrection,
+  getBulletLengthStatus 
+} from '@/lib/formatUtils';
+import { cn } from '@/lib/utils';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 export function ExperienceSection() {
   const { data, updateExperience, addExperience, removeExperience, setEditingField } = useResume();
   const [newHighlight, setNewHighlight] = useState<{ [key: string]: string }>({});
 
   const handleAddHighlight = (expId: string) => {
-    const highlight = newHighlight[expId]?.trim();
-    if (!highlight) return;
+    const rawHighlight = newHighlight[expId]?.trim();
+    if (!rawHighlight) return;
+    
+    // Auto-format the bullet text
+    const formattedHighlight = formatBulletText(rawHighlight);
     
     const experience = data.experience.find(exp => exp.id === expId);
     if (experience) {
       updateExperience(expId, {
-        highlights: [...experience.highlights, highlight],
+        highlights: [...experience.highlights, formattedHighlight],
       });
       setNewHighlight(prev => ({ ...prev, [expId]: '' }));
+    }
+  };
+
+  // Apply formatting suggestion
+  const applyTenseSuggestion = (expId: string, index: number, suggestion: string) => {
+    const experience = data.experience.find(exp => exp.id === expId);
+    if (experience) {
+      const newHighlights = [...experience.highlights];
+      newHighlights[index] = suggestion;
+      updateExperience(expId, { highlights: newHighlights });
     }
   };
 
@@ -102,40 +128,134 @@ export function ExperienceSection() {
                   Key Achievements
                 </span>
                 <AnimatePresence>
-                  {exp.highlights.map((highlight, index) => (
-                    <motion.div
-                      key={index}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      exit={{ opacity: 0, x: -10 }}
-                      className="flex items-start gap-2 group/highlight"
-                    >
-                      <span className="text-muted-foreground/40 mt-2">•</span>
-                      <span className="flex-1 text-xs text-foreground/80 py-1.5">{highlight}</span>
-                      <button
-                        onClick={() => handleRemoveHighlight(exp.id, index)}
-                        className="p-1 opacity-0 group-hover/highlight:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                  {exp.highlights.map((highlight, index) => {
+                    const issues = analyzeBullet(highlight);
+                    const lengthStatus = getBulletLengthStatus(highlight);
+                    const tenseSuggestion = suggestTenseCorrection(highlight);
+                    const hasIssues = issues.length > 0;
+                    
+                    return (
+                      <motion.div
+                        key={index}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -10 }}
+                        className={cn(
+                          "flex items-start gap-2 group/highlight relative rounded-sm transition-colors",
+                          lengthStatus.status === 'error' && "bg-red-50/50 -mx-1 px-1",
+                          lengthStatus.status === 'warning' && "bg-amber-50/30 -mx-1 px-1"
+                        )}
                       >
-                        <Minus className="w-3 h-3" />
-                      </button>
-                    </motion.div>
-                  ))}
+                        <span className="text-muted-foreground/40 mt-2">•</span>
+                        <span className={cn(
+                          "flex-1 text-xs py-1.5",
+                          lengthStatus.status === 'error' ? "text-red-700/80" : 
+                          lengthStatus.status === 'warning' ? "text-amber-700/80" : 
+                          "text-foreground/80"
+                        )}>
+                          {highlight}
+                        </span>
+                        
+                        {/* Issues indicator */}
+                        {hasIssues && (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <button className="p-1 text-amber-500 hover:text-amber-600 transition-colors">
+                                  <AlertTriangle className="w-3 h-3" />
+                                </button>
+                              </TooltipTrigger>
+                              <TooltipContent side="left" className="max-w-xs">
+                                <div className="space-y-1.5">
+                                  {issues.map((issue, i) => (
+                                    <div key={i} className="text-xs">
+                                      <span className={cn(
+                                        "font-medium",
+                                        issue.severity === 'error' ? "text-red-600" : "text-amber-600"
+                                      )}>
+                                        {issue.type === 'length' && '📏'}
+                                        {issue.type === 'tense' && '⏱️'}
+                                        {issue.type === 'punctuation' && '✏️'}
+                                        {issue.type === 'spacing' && '␣'}
+                                      </span>{' '}
+                                      {issue.message}
+                                    </div>
+                                  ))}
+                                  {tenseSuggestion && (
+                                    <button
+                                      onClick={() => applyTenseSuggestion(exp.id, index, tenseSuggestion)}
+                                      className="mt-1 text-xs text-blue-600 hover:text-blue-700 underline"
+                                    >
+                                      Apply: "{tenseSuggestion.slice(0, 30)}..."
+                                    </button>
+                                  )}
+                                </div>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                        )}
+                        
+                        {/* Length indicator */}
+                        {lengthStatus.status !== 'ok' && (
+                          <span className={cn(
+                            "text-[9px] font-mono tabular-nums",
+                            lengthStatus.status === 'error' ? "text-red-500" : "text-amber-500"
+                          )}>
+                            {lengthStatus.length}/{lengthStatus.max}
+                          </span>
+                        )}
+                        
+                        <button
+                          onClick={() => handleRemoveHighlight(exp.id, index)}
+                          className="p-1 opacity-0 group-hover/highlight:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+                        >
+                          <Minus className="w-3 h-3" />
+                        </button>
+                      </motion.div>
+                    );
+                  })}
                 </AnimatePresence>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    value={newHighlight[exp.id] || ''}
-                    onChange={(e) => setNewHighlight(prev => ({ ...prev, [exp.id]: e.target.value }))}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAddHighlight(exp.id)}
-                    placeholder="Add achievement..."
-                    className="flex-1 text-xs bg-transparent border-b border-transparent hover:border-black/10 focus:border-[#64748B] focus:outline-none py-1.5 placeholder:text-muted-foreground/40"
-                  />
-                  <button
-                    onClick={() => handleAddHighlight(exp.id)}
-                    className="p-1 text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    <PlusCircle className="w-3.5 h-3.5" />
-                  </button>
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="text"
+                      value={newHighlight[exp.id] || ''}
+                      onChange={(e) => setNewHighlight(prev => ({ ...prev, [exp.id]: e.target.value }))}
+                      onKeyDown={(e) => e.key === 'Enter' && handleAddHighlight(exp.id)}
+                      onBlur={() => {
+                        // Auto-format on blur
+                        const value = newHighlight[exp.id];
+                        if (value) {
+                          setNewHighlight(prev => ({ ...prev, [exp.id]: formatBulletText(value) }));
+                        }
+                      }}
+                      placeholder="Add achievement..."
+                      className={cn(
+                        "flex-1 text-xs bg-transparent border-b border-transparent hover:border-black/10 focus:border-[#64748B] focus:outline-none py-1.5 placeholder:text-muted-foreground/40",
+                        (newHighlight[exp.id]?.length || 0) > 150 && "text-red-600",
+                        (newHighlight[exp.id]?.length || 0) > 120 && (newHighlight[exp.id]?.length || 0) <= 150 && "text-amber-600"
+                      )}
+                    />
+                    <button
+                      onClick={() => handleAddHighlight(exp.id)}
+                      className="p-1 text-muted-foreground hover:text-foreground transition-colors"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                  {/* Live character counter */}
+                  {(newHighlight[exp.id]?.length || 0) > 80 && (
+                    <div className="flex justify-end">
+                      <span className={cn(
+                        "text-[9px] font-mono tabular-nums transition-colors",
+                        (newHighlight[exp.id]?.length || 0) > 150 ? "text-red-500" :
+                        (newHighlight[exp.id]?.length || 0) > 120 ? "text-amber-500" :
+                        "text-muted-foreground/50"
+                      )}>
+                        {newHighlight[exp.id]?.length || 0}/150
+                      </span>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
