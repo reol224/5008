@@ -198,7 +198,12 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const reorderSections = useCallback((newSections: SectionConfig[]) => {
-    setSections(newSections);
+    // Update the order property based on new positions
+    const updatedSections = newSections.map((section, index) => ({
+      ...section,
+      order: index,
+    }));
+    setSections(updatedSections);
   }, []);
 
   const toggleSectionVisibility = useCallback((id: string) => {

@@ -7,7 +7,7 @@ import { ExperienceSection } from './sections/ExperienceSection';
 import { EducationSection } from './sections/EducationSection';
 import { SkillsSection } from './sections/SkillsSection';
 import { GripVertical, ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
-import { motion, Reorder, AnimatePresence } from 'framer-motion';
+import { motion, Reorder, AnimatePresence, useDragControls } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
 interface CollapsibleSectionProps {
@@ -16,20 +16,35 @@ interface CollapsibleSectionProps {
   onToggleVisibility: () => void;
 }
 
-function CollapsibleSection({ section, children, onToggleVisibility }: CollapsibleSectionProps) {
+interface DragHandleProps {
+  dragControls: any;
+}
+
+function DragHandle({ dragControls }: DragHandleProps) {
+  return (
+    <div
+      onPointerDown={(e) => dragControls.start(e)}
+      className="cursor-grab active:cursor-grabbing touch-none"
+    >
+      <GripVertical className="w-4 h-4 text-muted-foreground/50 hover:text-muted-foreground transition-colors" />
+    </div>
+  );
+}
+
+interface CollapsibleSectionProps {
+  section: SectionConfig;
+  children: React.ReactNode;
+  onToggleVisibility: () => void;
+  dragControls: any;
+}
+
+function CollapsibleSection({ section, children, onToggleVisibility, dragControls }: CollapsibleSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
   return (
-    <motion.div
-      layout
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      transition={{ duration: 0.2, ease: 'easeOut' }}
-      className="group bg-white/50 rounded-md border border-black/[0.06] overflow-hidden"
-    >
+    <div className="group bg-white/50 rounded-md border border-black/[0.06] overflow-hidden">
       <div className="flex items-center gap-2 px-3 py-2.5 border-b border-black/[0.04]">
-        <GripVertical className="w-4 h-4 text-muted-foreground/50 cursor-grab active:cursor-grabbing" />
+        <DragHandle dragControls={dragControls} />
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center gap-1.5 flex-1 text-left"
@@ -77,7 +92,40 @@ function CollapsibleSection({ section, children, onToggleVisibility }: Collapsib
           </motion.div>
         )}
       </AnimatePresence>
-    </motion.div>
+    </div>
+  );
+}
+
+interface ReorderItemProps {
+  section: SectionConfig;
+  children: React.ReactNode;
+  onToggleVisibility: () => void;
+}
+
+function ReorderItem({ section, children, onToggleVisibility }: ReorderItemProps) {
+  const dragControls = useDragControls();
+
+  return (
+    <Reorder.Item
+      value={section}
+      dragListener={false}
+      dragControls={dragControls}
+      className="list-none"
+      whileDrag={{ 
+        scale: 1.02, 
+        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+        zIndex: 50
+      }}
+      transition={{ duration: 0.2 }}
+    >
+      <CollapsibleSection
+        section={section}
+        onToggleVisibility={onToggleVisibility}
+        dragControls={dragControls}
+      >
+        {children}
+      </CollapsibleSection>
+    </Reorder.Item>
   );
 }
 
@@ -117,18 +165,13 @@ export function EditorPane() {
           className="space-y-3"
         >
           {sections.map((section) => (
-            <Reorder.Item
+            <ReorderItem
               key={section.id}
-              value={section}
-              className="list-none"
+              section={section}
+              onToggleVisibility={() => toggleSectionVisibility(section.id)}
             >
-              <CollapsibleSection
-                section={section}
-                onToggleVisibility={() => toggleSectionVisibility(section.id)}
-              >
-                {getSectionComponent(section.id)}
-              </CollapsibleSection>
-            </Reorder.Item>
+              {getSectionComponent(section.id)}
+            </ReorderItem>
           ))}
         </Reorder.Group>
       </div>
