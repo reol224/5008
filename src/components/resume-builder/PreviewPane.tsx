@@ -71,7 +71,7 @@ export function PreviewPane() {
         >
           <div 
             className={cn(
-              "w-[595px] bg-white shadow-lg a4-ratio overflow-hidden",
+              "w-[595px] bg-white shadow-lg a4-ratio overflow-y-auto",
               "paper-texture"
             )}
             style={{

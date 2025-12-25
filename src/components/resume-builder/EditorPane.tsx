@@ -41,6 +41,9 @@ interface CollapsibleSectionProps {
 function CollapsibleSection({ section, children, onToggleVisibility, dragControls }: CollapsibleSectionProps) {
   const [isExpanded, setIsExpanded] = useState(true);
 
+  // All sections except skills get max-height with scroll to ensure skills remains visible
+  const needsScrollableContent = section.id !== 'skills';
+
   return (
     <div className="group bg-white/50 rounded-md border border-black/[0.06] overflow-hidden">
       <div className="flex items-center gap-2 px-3 py-2.5 border-b border-black/[0.04]">
@@ -85,7 +88,8 @@ function CollapsibleSection({ section, children, onToggleVisibility, dragControl
           >
             <div className={cn(
               "p-4 transition-opacity",
-              !section.visible && "opacity-50"
+              !section.visible && "opacity-50",
+              needsScrollableContent && "max-h-[200px] overflow-y-auto"
             )}>
               {children}
             </div>
