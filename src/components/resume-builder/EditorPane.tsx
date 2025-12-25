@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { useResume } from '@/contexts/ResumeContext';
-import { SectionConfig } from '@/types/resume';
+import { SectionConfig, SectionType } from '@/types/resume';
 import { ContactSection } from './sections/ContactSection';
 import { SummarySection } from './sections/SummarySection';
 import { ExperienceSection } from './sections/ExperienceSection';
 import { EducationSection } from './sections/EducationSection';
 import { SkillsSection } from './sections/SkillsSection';
-import { GripVertical, ChevronDown, ChevronRight, Eye, EyeOff } from 'lucide-react';
+import { CertificationsSection } from './sections/CertificationsSection';
+import { PublicationsSection } from './sections/PublicationsSection';
+import { AwardsSection } from './sections/AwardsSection';
+import { CustomSectionEditor } from './sections/CustomSectionEditor';
+import { GripVertical, ChevronDown, ChevronRight, Eye, EyeOff, Plus } from 'lucide-react';
 import { motion, Reorder, AnimatePresence, useDragControls } from 'framer-motion';
 import { cn } from '@/lib/utils';
 
@@ -134,7 +138,9 @@ function ReorderItem({ section, children, onToggleVisibility }: ReorderItemProps
 }
 
 export function EditorPane() {
-  const { sections, reorderSections, toggleSectionVisibility } = useResume();
+  const { sections, reorderSections, toggleSectionVisibility, addCustomSection, data } = useResume();
+  const [showAddSection, setShowAddSection] = useState(false);
+  const [newSectionTitle, setNewSectionTitle] = useState('');
 
   const getSectionComponent = (sectionId: string) => {
     switch (sectionId) {
@@ -148,8 +154,29 @@ export function EditorPane() {
         return <EducationSection />;
       case 'skills':
         return <SkillsSection />;
+      case 'certifications':
+        return <CertificationsSection />;
+      case 'publications':
+        return <PublicationsSection />;
+      case 'awards':
+        return <AwardsSection />;
       default:
+        // Check if it's a custom section
+        if (sectionId.startsWith('custom-')) {
+          const customSection = data.customSections.find(s => s.id === sectionId);
+          if (customSection) {
+            return <CustomSectionEditor section={customSection} />;
+          }
+        }
         return null;
+    }
+  };
+
+  const handleAddCustomSection = () => {
+    if (newSectionTitle.trim()) {
+      addCustomSection(newSectionTitle.trim());
+      setNewSectionTitle('');
+      setShowAddSection(false);
     }
   };
 
@@ -172,12 +199,52 @@ export function EditorPane() {
             <ReorderItem
               key={section.id}
               section={section}
-              onToggleVisibility={() => toggleSectionVisibility(section.id)}
+              onToggleVisibility={() => toggleSectionVisibility(section.id as SectionType)}
             >
               {getSectionComponent(section.id)}
             </ReorderItem>
           ))}
         </Reorder.Group>
+
+        {/* Add Custom Section */}
+        <div className="mt-4 pt-4 border-t border-black/[0.06]">
+          {showAddSection ? (
+            <div className="flex items-center gap-2">
+              <input
+                type="text"
+                value={newSectionTitle}
+                onChange={(e) => setNewSectionTitle(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleAddCustomSection()}
+                placeholder="Section title..."
+                autoFocus
+                className="flex-1 text-xs bg-transparent border-b border-[#64748B] focus:outline-none py-1 placeholder:text-muted-foreground/40"
+              />
+              <button
+                onClick={handleAddCustomSection}
+                className="text-xs text-[#64748B] hover:text-foreground transition-colors"
+              >
+                Add
+              </button>
+              <button
+                onClick={() => {
+                  setShowAddSection(false);
+                  setNewSectionTitle('');
+                }}
+                className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={() => setShowAddSection(true)}
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Custom Section
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

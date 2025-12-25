@@ -231,7 +231,165 @@ export function ClassicTemplate() {
           </section>
         ) : null;
 
+      case 'certifications':
+        return data.certifications.length > 0 ? (
+          <section className="mb-6">
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest text-[#64748B] mb-3 border-b border-[#1A1A1A]/10 pb-2">
+              Certifications
+            </h2>
+            <div className="space-y-3">
+              {data.certifications.map((cert) => (
+                <div key={cert.id} className="flex justify-between items-start">
+                  <div>
+                    <h3 className={cn(
+                      "font-body font-semibold text-[#1A1A1A] transition-all duration-150",
+                      isEditing(`certifications.${cert.id}.name`) && "ring-2 ring-[#64748B]/30 ring-offset-1 rounded px-1"
+                    )}>
+                      {cert.name || 'Certification Name'}
+                    </h3>
+                    <p className={cn(
+                      "font-body text-sm text-[#64748B] transition-all duration-150",
+                      isEditing(`certifications.${cert.id}.issuer`) && "ring-2 ring-[#64748B]/30 ring-offset-1 rounded px-1"
+                    )}>
+                      {cert.issuer || 'Issuing Organization'}
+                    </p>
+                    {cert.credentialId && (
+                      <p className="font-mono-ui text-xs text-[#1A1A1A]/50">
+                        ID: {cert.credentialId}
+                      </p>
+                    )}
+                  </div>
+                  <span className="font-mono-ui text-xs text-[#1A1A1A]/50">
+                    {cert.date}
+                    {cert.expiryDate && ` – ${cert.expiryDate}`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'publications':
+        return data.publications.length > 0 ? (
+          <section className="mb-6">
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest text-[#64748B] mb-3 border-b border-[#1A1A1A]/10 pb-2">
+              Publications
+            </h2>
+            <div className="space-y-3">
+              {data.publications.map((pub) => (
+                <div key={pub.id}>
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className={cn(
+                      "font-body font-semibold text-[#1A1A1A] transition-all duration-150",
+                      isEditing(`publications.${pub.id}.title`) && "ring-2 ring-[#64748B]/30 ring-offset-1 rounded px-1"
+                    )}>
+                      {pub.title || 'Publication Title'}
+                    </h3>
+                    <span className="font-mono-ui text-xs text-[#1A1A1A]/50">
+                      {pub.date}
+                    </span>
+                  </div>
+                  <p className={cn(
+                    "font-body text-sm text-[#64748B] transition-all duration-150",
+                    isEditing(`publications.${pub.id}.publisher`) && "ring-2 ring-[#64748B]/30 ring-offset-1 rounded px-1"
+                  )}>
+                    {pub.publisher || 'Publisher'}
+                  </p>
+                  {pub.description && (
+                    <p className="font-body text-sm text-[#1A1A1A]/70 mt-1">
+                      {pub.description}
+                    </p>
+                  )}
+                  {pub.url && (
+                    <p className="font-mono-ui text-xs text-[#64748B] mt-1">
+                      {pub.url}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'awards':
+        return data.awards.length > 0 ? (
+          <section className="mb-6">
+            <h2 className="font-display text-sm font-bold uppercase tracking-widest text-[#64748B] mb-3 border-b border-[#1A1A1A]/10 pb-2">
+              Awards
+            </h2>
+            <div className="space-y-3">
+              {data.awards.map((award) => (
+                <div key={award.id}>
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className={cn(
+                      "font-body font-semibold text-[#1A1A1A] transition-all duration-150",
+                      isEditing(`awards.${award.id}.title`) && "ring-2 ring-[#64748B]/30 ring-offset-1 rounded px-1"
+                    )}>
+                      {award.title || 'Award Title'}
+                    </h3>
+                    <span className="font-mono-ui text-xs text-[#1A1A1A]/50">
+                      {award.date}
+                    </span>
+                  </div>
+                  <p className={cn(
+                    "font-body text-sm text-[#64748B] transition-all duration-150",
+                    isEditing(`awards.${award.id}.issuer`) && "ring-2 ring-[#64748B]/30 ring-offset-1 rounded px-1"
+                  )}>
+                    {award.issuer || 'Issuing Organization'}
+                  </p>
+                  {award.description && (
+                    <p className="font-body text-sm text-[#1A1A1A]/70 mt-1">
+                      {award.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
       default:
+        // Handle custom sections
+        if (sectionId.startsWith('custom-')) {
+          const customSection = data.customSections.find(s => s.id === sectionId);
+          if (customSection && customSection.items.length > 0) {
+            return (
+              <section className="mb-6">
+                <h2 className="font-display text-sm font-bold uppercase tracking-widest text-[#64748B] mb-3 border-b border-[#1A1A1A]/10 pb-2">
+                  {customSection.title}
+                </h2>
+                <div className="space-y-3">
+                  {customSection.items.map((item) => (
+                    <div key={item.id}>
+                      <div className="flex justify-between items-start mb-1">
+                        <div>
+                          <h3 className="font-body font-semibold text-[#1A1A1A]">
+                            {item.title || 'Item Title'}
+                          </h3>
+                          {item.subtitle && (
+                            <p className="font-body text-sm text-[#64748B]">
+                              {item.subtitle}
+                            </p>
+                          )}
+                        </div>
+                        {item.date && (
+                          <span className="font-mono-ui text-xs text-[#1A1A1A]/50">
+                            {item.date}
+                          </span>
+                        )}
+                      </div>
+                      {item.description && (
+                        <p className="font-body text-sm text-[#1A1A1A]/70">
+                          {item.description}
+                        </p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          }
+        }
         return null;
     }
   };

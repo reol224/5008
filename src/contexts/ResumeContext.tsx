@@ -6,7 +6,13 @@ import {
   Experience, 
   Education, 
   Skill,
-  ContactInfo
+  ContactInfo,
+  Certification,
+  Publication,
+  Award,
+  CustomSection,
+  CustomSectionItem,
+  SectionType
 } from '@/types/resume';
 
 const defaultResumeData: ResumeData = {
@@ -69,6 +75,10 @@ const defaultResumeData: ResumeData = {
     { id: '7', name: 'HTML/CSS', category: 'Technical' },
     { id: '8', name: 'JavaScript', category: 'Technical' },
   ],
+  certifications: [],
+  publications: [],
+  awards: [],
+  customSections: [],
 };
 
 const defaultSections: SectionConfig[] = [
@@ -77,6 +87,9 @@ const defaultSections: SectionConfig[] = [
   { id: 'experience', title: 'Experience', visible: true, order: 2 },
   { id: 'education', title: 'Education', visible: true, order: 3 },
   { id: 'skills', title: 'Skills', visible: true, order: 4 },
+  { id: 'certifications', title: 'Certifications', visible: false, order: 5 },
+  { id: 'publications', title: 'Publications', visible: false, order: 6 },
+  { id: 'awards', title: 'Awards', visible: false, order: 7 },
 ];
 
 interface ResumeContextType {
@@ -96,8 +109,28 @@ interface ResumeContextType {
   updateSkills: (skills: Skill[]) => void;
   addSkill: (name: string, category?: string) => void;
   removeSkill: (id: string) => void;
+  // Certifications
+  updateCertification: (id: string, certification: Partial<Certification>) => void;
+  addCertification: () => void;
+  removeCertification: (id: string) => void;
+  // Publications
+  updatePublication: (id: string, publication: Partial<Publication>) => void;
+  addPublication: () => void;
+  removePublication: (id: string) => void;
+  // Awards
+  updateAward: (id: string, award: Partial<Award>) => void;
+  addAward: () => void;
+  removeAward: (id: string) => void;
+  // Custom Sections
+  addCustomSection: (title: string) => void;
+  removeCustomSection: (sectionId: string) => void;
+  updateCustomSectionTitle: (sectionId: string, title: string) => void;
+  addCustomSectionItem: (sectionId: string) => void;
+  updateCustomSectionItem: (sectionId: string, itemId: string, item: Partial<CustomSectionItem>) => void;
+  removeCustomSectionItem: (sectionId: string, itemId: string) => void;
+  // Sections
   reorderSections: (sections: SectionConfig[]) => void;
-  toggleSectionVisibility: (id: string) => void;
+  toggleSectionVisibility: (id: SectionType) => void;
   setTemplate: (template: TemplateType) => void;
   setEditingField: (field: string | null) => void;
   setZoom: (zoom: number) => void;
@@ -197,6 +230,157 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
     }));
   }, []);
 
+  // Certifications
+  const updateCertification = useCallback((id: string, certification: Partial<Certification>) => {
+    setData(prev => ({
+      ...prev,
+      certifications: prev.certifications.map(cert => 
+        cert.id === id ? { ...cert, ...certification } : cert
+      ),
+    }));
+  }, []);
+
+  const addCertification = useCallback(() => {
+    const newCert: Certification = {
+      id: Date.now().toString(),
+      name: '',
+      issuer: '',
+      date: '',
+    };
+    setData(prev => ({ ...prev, certifications: [...prev.certifications, newCert] }));
+  }, []);
+
+  const removeCertification = useCallback((id: string) => {
+    setData(prev => ({
+      ...prev,
+      certifications: prev.certifications.filter(cert => cert.id !== id),
+    }));
+  }, []);
+
+  // Publications
+  const updatePublication = useCallback((id: string, publication: Partial<Publication>) => {
+    setData(prev => ({
+      ...prev,
+      publications: prev.publications.map(pub => 
+        pub.id === id ? { ...pub, ...publication } : pub
+      ),
+    }));
+  }, []);
+
+  const addPublication = useCallback(() => {
+    const newPub: Publication = {
+      id: Date.now().toString(),
+      title: '',
+      publisher: '',
+      date: '',
+    };
+    setData(prev => ({ ...prev, publications: [...prev.publications, newPub] }));
+  }, []);
+
+  const removePublication = useCallback((id: string) => {
+    setData(prev => ({
+      ...prev,
+      publications: prev.publications.filter(pub => pub.id !== id),
+    }));
+  }, []);
+
+  // Awards
+  const updateAward = useCallback((id: string, award: Partial<Award>) => {
+    setData(prev => ({
+      ...prev,
+      awards: prev.awards.map(a => 
+        a.id === id ? { ...a, ...award } : a
+      ),
+    }));
+  }, []);
+
+  const addAward = useCallback(() => {
+    const newAward: Award = {
+      id: Date.now().toString(),
+      title: '',
+      issuer: '',
+      date: '',
+    };
+    setData(prev => ({ ...prev, awards: [...prev.awards, newAward] }));
+  }, []);
+
+  const removeAward = useCallback((id: string) => {
+    setData(prev => ({
+      ...prev,
+      awards: prev.awards.filter(a => a.id !== id),
+    }));
+  }, []);
+
+  // Custom Sections
+  const addCustomSection = useCallback((title: string) => {
+    const sectionId = `custom-${Date.now()}`;
+    const newCustomSection: CustomSection = {
+      id: sectionId,
+      title,
+      items: [],
+    };
+    setData(prev => ({ ...prev, customSections: [...prev.customSections, newCustomSection] }));
+    setSections(prev => [
+      ...prev,
+      { id: sectionId as SectionType, title, visible: true, order: prev.length, isCustom: true }
+    ]);
+  }, []);
+
+  const removeCustomSection = useCallback((sectionId: string) => {
+    setData(prev => ({
+      ...prev,
+      customSections: prev.customSections.filter(s => s.id !== sectionId),
+    }));
+    setSections(prev => prev.filter(s => s.id !== sectionId));
+  }, []);
+
+  const updateCustomSectionTitle = useCallback((sectionId: string, title: string) => {
+    setData(prev => ({
+      ...prev,
+      customSections: prev.customSections.map(s => 
+        s.id === sectionId ? { ...s, title } : s
+      ),
+    }));
+    setSections(prev => prev.map(s => 
+      s.id === sectionId ? { ...s, title } : s
+    ));
+  }, []);
+
+  const addCustomSectionItem = useCallback((sectionId: string) => {
+    const newItem: CustomSectionItem = {
+      id: Date.now().toString(),
+      title: '',
+    };
+    setData(prev => ({
+      ...prev,
+      customSections: prev.customSections.map(s => 
+        s.id === sectionId ? { ...s, items: [...s.items, newItem] } : s
+      ),
+    }));
+  }, []);
+
+  const updateCustomSectionItem = useCallback((sectionId: string, itemId: string, item: Partial<CustomSectionItem>) => {
+    setData(prev => ({
+      ...prev,
+      customSections: prev.customSections.map(s => 
+        s.id === sectionId 
+          ? { ...s, items: s.items.map(i => i.id === itemId ? { ...i, ...item } : i) }
+          : s
+      ),
+    }));
+  }, []);
+
+  const removeCustomSectionItem = useCallback((sectionId: string, itemId: string) => {
+    setData(prev => ({
+      ...prev,
+      customSections: prev.customSections.map(s => 
+        s.id === sectionId 
+          ? { ...s, items: s.items.filter(i => i.id !== itemId) }
+          : s
+      ),
+    }));
+  }, []);
+
   const reorderSections = useCallback((newSections: SectionConfig[]) => {
     // Update the order property based on new positions
     const updatedSections = newSections.map((section, index) => ({
@@ -206,7 +390,7 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
     setSections(updatedSections);
   }, []);
 
-  const toggleSectionVisibility = useCallback((id: string) => {
+  const toggleSectionVisibility = useCallback((id: SectionType) => {
     setSections(prev => prev.map(section => 
       section.id === id ? { ...section, visible: !section.visible } : section
     ));
@@ -231,6 +415,21 @@ export function ResumeProvider({ children }: { children: React.ReactNode }) {
         updateSkills,
         addSkill,
         removeSkill,
+        updateCertification,
+        addCertification,
+        removeCertification,
+        updatePublication,
+        addPublication,
+        removePublication,
+        updateAward,
+        addAward,
+        removeAward,
+        addCustomSection,
+        removeCustomSection,
+        updateCustomSectionTitle,
+        addCustomSectionItem,
+        updateCustomSectionItem,
+        removeCustomSectionItem,
         reorderSections,
         toggleSectionVisibility,
         setTemplate,

@@ -116,7 +116,120 @@ export function MinimalTemplate() {
           </section>
         ) : null;
 
+      case 'certifications':
+        return data.certifications.length > 0 ? (
+          <section className="mb-8">
+            <h2 className="font-mono-ui text-[10px] font-light uppercase tracking-[0.2em] text-[#1A1A1A]/40 mb-5">
+              Certifications
+            </h2>
+            <div className="space-y-3">
+              {data.certifications.map((cert) => (
+                <div key={cert.id}>
+                  <h3 className="font-body font-medium text-[#1A1A1A] text-sm">
+                    {cert.name || 'Certification Name'}
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-[#1A1A1A]/60">{cert.issuer}</span>
+                    <span className="font-mono-ui text-xs text-[#1A1A1A]/40">
+                      {cert.date}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'publications':
+        return data.publications.length > 0 ? (
+          <section className="mb-8">
+            <h2 className="font-mono-ui text-[10px] font-light uppercase tracking-[0.2em] text-[#1A1A1A]/40 mb-5">
+              Publications
+            </h2>
+            <div className="space-y-3">
+              {data.publications.map((pub) => (
+                <div key={pub.id}>
+                  <h3 className="font-body font-medium text-[#1A1A1A] text-sm">
+                    {pub.title || 'Publication Title'}
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-[#1A1A1A]/60">{pub.publisher}</span>
+                    <span className="font-mono-ui text-xs text-[#1A1A1A]/40">
+                      {pub.date}
+                    </span>
+                  </div>
+                  {pub.description && (
+                    <p className="font-body text-sm text-[#1A1A1A]/50 mt-1">{pub.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'awards':
+        return data.awards.length > 0 ? (
+          <section className="mb-8">
+            <h2 className="font-mono-ui text-[10px] font-light uppercase tracking-[0.2em] text-[#1A1A1A]/40 mb-5">
+              Awards
+            </h2>
+            <div className="space-y-3">
+              {data.awards.map((award) => (
+                <div key={award.id}>
+                  <h3 className="font-body font-medium text-[#1A1A1A] text-sm">
+                    {award.title || 'Award Title'}
+                  </h3>
+                  <div className="flex items-center gap-2 text-sm">
+                    <span className="text-[#1A1A1A]/60">{award.issuer}</span>
+                    <span className="font-mono-ui text-xs text-[#1A1A1A]/40">
+                      {award.date}
+                    </span>
+                  </div>
+                  {award.description && (
+                    <p className="font-body text-sm text-[#1A1A1A]/50 mt-1">{award.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
       default:
+        // Handle custom sections
+        if (sectionId.startsWith('custom-')) {
+          const customSection = data.customSections.find(s => s.id === sectionId);
+          if (customSection && customSection.items.length > 0) {
+            return (
+              <section className="mb-8">
+                <h2 className="font-mono-ui text-[10px] font-light uppercase tracking-[0.2em] text-[#1A1A1A]/40 mb-5">
+                  {customSection.title}
+                </h2>
+                <div className="space-y-3">
+                  {customSection.items.map((item) => (
+                    <div key={item.id}>
+                      <h3 className="font-body font-medium text-[#1A1A1A] text-sm">
+                        {item.title || 'Item Title'}
+                      </h3>
+                      {(item.subtitle || item.date) && (
+                        <div className="flex items-center gap-2 text-sm">
+                          {item.subtitle && <span className="text-[#1A1A1A]/60">{item.subtitle}</span>}
+                          {item.date && (
+                            <span className="font-mono-ui text-xs text-[#1A1A1A]/40">
+                              {item.date}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      {item.description && (
+                        <p className="font-body text-sm text-[#1A1A1A]/50 mt-1">{item.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          }
+        }
         return null;
     }
   };

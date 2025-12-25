@@ -8,8 +8,8 @@ export function TwoColumnTemplate() {
   const isEditing = (field: string) => editingField === field;
 
   // Split sections for two-column layout
-  const leftSections = ['summary', 'experience'];
-  const rightSections = ['education', 'skills'];
+  const leftSections = ['summary', 'experience', 'publications'];
+  const rightSections = ['education', 'skills', 'certifications', 'awards'];
 
   const renderContactSection = () => (
     <header className="border-b border-[#1A1A1A]/10 pb-6 mb-6">
@@ -134,7 +134,107 @@ export function TwoColumnTemplate() {
           </section>
         ) : null;
 
+      case 'certifications':
+        return data.certifications.length > 0 ? (
+          <section className="mb-6">
+            <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#64748B] mb-3">
+              Certifications
+            </h2>
+            <div className="space-y-2">
+              {data.certifications.map((cert) => (
+                <div key={cert.id}>
+                  <h3 className="font-body font-semibold text-sm text-[#1A1A1A]">
+                    {cert.name || 'Certification Name'}
+                  </h3>
+                  <p className="font-body text-xs text-[#1A1A1A]/60">{cert.issuer}</p>
+                  <p className="font-mono-ui text-[10px] text-[#1A1A1A]/40">
+                    {cert.date}
+                    {cert.expiryDate && ` – ${cert.expiryDate}`}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'publications':
+        return data.publications.length > 0 ? (
+          <section className="mb-6">
+            <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#64748B] mb-3">
+              Publications
+            </h2>
+            <div className="space-y-3">
+              {data.publications.map((pub) => (
+                <div key={pub.id}>
+                  <h3 className="font-body font-semibold text-sm text-[#1A1A1A]">
+                    {pub.title || 'Publication Title'}
+                  </h3>
+                  <p className="font-body text-xs text-[#1A1A1A]/60">{pub.publisher}</p>
+                  <p className="font-mono-ui text-[10px] text-[#1A1A1A]/40">{pub.date}</p>
+                  {pub.description && (
+                    <p className="font-body text-xs text-[#1A1A1A]/50 mt-1">{pub.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
+      case 'awards':
+        return data.awards.length > 0 ? (
+          <section className="mb-6">
+            <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#64748B] mb-3">
+              Awards
+            </h2>
+            <div className="space-y-2">
+              {data.awards.map((award) => (
+                <div key={award.id}>
+                  <h3 className="font-body font-semibold text-sm text-[#1A1A1A]">
+                    {award.title || 'Award Title'}
+                  </h3>
+                  <p className="font-body text-xs text-[#1A1A1A]/60">{award.issuer}</p>
+                  <p className="font-mono-ui text-[10px] text-[#1A1A1A]/40">{award.date}</p>
+                  {award.description && (
+                    <p className="font-body text-xs text-[#1A1A1A]/50 mt-1">{award.description}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null;
+
       default:
+        // Handle custom sections (put in left column by default)
+        if (sectionId.startsWith('custom-')) {
+          const customSection = data.customSections.find(s => s.id === sectionId);
+          if (customSection && customSection.items.length > 0) {
+            return (
+              <section className="mb-6">
+                <h2 className="font-display text-xs font-bold uppercase tracking-wider text-[#64748B] mb-3">
+                  {customSection.title}
+                </h2>
+                <div className="space-y-2">
+                  {customSection.items.map((item) => (
+                    <div key={item.id}>
+                      <h3 className="font-body font-semibold text-sm text-[#1A1A1A]">
+                        {item.title || 'Item Title'}
+                      </h3>
+                      {item.subtitle && (
+                        <p className="font-body text-xs text-[#1A1A1A]/60">{item.subtitle}</p>
+                      )}
+                      {item.date && (
+                        <p className="font-mono-ui text-[10px] text-[#1A1A1A]/40">{item.date}</p>
+                      )}
+                      {item.description && (
+                        <p className="font-body text-xs text-[#1A1A1A]/50 mt-1">{item.description}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            );
+          }
+        }
         return null;
     }
   };
@@ -149,7 +249,7 @@ export function TwoColumnTemplate() {
         {/* Left Column - Main Content */}
         <div>
           {visibleSections
-            .filter(s => leftSections.includes(s.id))
+            .filter(s => leftSections.includes(s.id) || s.id.startsWith('custom-'))
             .map((section) => (
               <div key={section.id}>
                 {renderSection(section.id)}

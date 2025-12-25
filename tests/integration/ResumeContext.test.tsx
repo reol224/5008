@@ -20,8 +20,13 @@ describe('ResumeContext', () => {
     it('provides default sections', () => {
       const { result } = renderHook(() => useResume(), { wrapper });
       
-      expect(result.current.sections).toHaveLength(5);
+      // 5 core sections + 3 optional sections (certifications, publications, awards)
+      expect(result.current.sections).toHaveLength(8);
       expect(result.current.sections[0].id).toBe('contact');
+      // Optional sections should be hidden by default
+      expect(result.current.sections.find(s => s.id === 'certifications')?.visible).toBe(false);
+      expect(result.current.sections.find(s => s.id === 'publications')?.visible).toBe(false);
+      expect(result.current.sections.find(s => s.id === 'awards')?.visible).toBe(false);
     });
 
     it('provides default template', () => {
@@ -391,6 +396,275 @@ describe('ResumeContext', () => {
         });
         expect(result.current.zoom).toBe(zoom);
       });
+    });
+  });
+
+  describe('certifications operations', () => {
+    it('adds certification', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCertification();
+      });
+      
+      expect(result.current.data.certifications).toHaveLength(1);
+      expect(result.current.data.certifications[0].name).toBe('');
+    });
+
+    it('updates certification', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCertification();
+      });
+      
+      const certId = result.current.data.certifications[0].id;
+      
+      act(() => {
+        result.current.updateCertification(certId, { 
+          name: 'AWS Solutions Architect',
+          issuer: 'Amazon Web Services'
+        });
+      });
+      
+      expect(result.current.data.certifications[0].name).toBe('AWS Solutions Architect');
+      expect(result.current.data.certifications[0].issuer).toBe('Amazon Web Services');
+    });
+
+    it('removes certification', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCertification();
+      });
+      
+      const certId = result.current.data.certifications[0].id;
+      
+      act(() => {
+        result.current.removeCertification(certId);
+      });
+      
+      expect(result.current.data.certifications).toHaveLength(0);
+    });
+  });
+
+  describe('publications operations', () => {
+    it('adds publication', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addPublication();
+      });
+      
+      expect(result.current.data.publications).toHaveLength(1);
+      expect(result.current.data.publications[0].title).toBe('');
+    });
+
+    it('updates publication', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addPublication();
+      });
+      
+      const pubId = result.current.data.publications[0].id;
+      
+      act(() => {
+        result.current.updatePublication(pubId, { 
+          title: 'Machine Learning in Practice',
+          publisher: 'IEEE'
+        });
+      });
+      
+      expect(result.current.data.publications[0].title).toBe('Machine Learning in Practice');
+      expect(result.current.data.publications[0].publisher).toBe('IEEE');
+    });
+
+    it('removes publication', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addPublication();
+      });
+      
+      const pubId = result.current.data.publications[0].id;
+      
+      act(() => {
+        result.current.removePublication(pubId);
+      });
+      
+      expect(result.current.data.publications).toHaveLength(0);
+    });
+  });
+
+  describe('awards operations', () => {
+    it('adds award', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addAward();
+      });
+      
+      expect(result.current.data.awards).toHaveLength(1);
+      expect(result.current.data.awards[0].title).toBe('');
+    });
+
+    it('updates award', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addAward();
+      });
+      
+      const awardId = result.current.data.awards[0].id;
+      
+      act(() => {
+        result.current.updateAward(awardId, { 
+          title: 'Employee of the Year',
+          issuer: 'TechCorp'
+        });
+      });
+      
+      expect(result.current.data.awards[0].title).toBe('Employee of the Year');
+      expect(result.current.data.awards[0].issuer).toBe('TechCorp');
+    });
+
+    it('removes award', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addAward();
+      });
+      
+      const awardId = result.current.data.awards[0].id;
+      
+      act(() => {
+        result.current.removeAward(awardId);
+      });
+      
+      expect(result.current.data.awards).toHaveLength(0);
+    });
+  });
+
+  describe('custom sections operations', () => {
+    it('adds custom section', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCustomSection('Projects');
+      });
+      
+      expect(result.current.data.customSections).toHaveLength(1);
+      expect(result.current.data.customSections[0].title).toBe('Projects');
+      
+      // Should also add to sections list
+      const customSection = result.current.sections.find(s => s.id.startsWith('custom-'));
+      expect(customSection).toBeDefined();
+      expect(customSection?.title).toBe('Projects');
+      expect(customSection?.visible).toBe(true);
+      expect(customSection?.isCustom).toBe(true);
+    });
+
+    it('removes custom section', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCustomSection('Projects');
+      });
+      
+      const sectionId = result.current.data.customSections[0].id;
+      
+      act(() => {
+        result.current.removeCustomSection(sectionId);
+      });
+      
+      expect(result.current.data.customSections).toHaveLength(0);
+      expect(result.current.sections.find(s => s.id === sectionId)).toBeUndefined();
+    });
+
+    it('updates custom section title', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCustomSection('Projects');
+      });
+      
+      const sectionId = result.current.data.customSections[0].id;
+      
+      act(() => {
+        result.current.updateCustomSectionTitle(sectionId, 'Volunteer Work');
+      });
+      
+      expect(result.current.data.customSections[0].title).toBe('Volunteer Work');
+      expect(result.current.sections.find(s => s.id === sectionId)?.title).toBe('Volunteer Work');
+    });
+
+    it('adds custom section item', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCustomSection('Projects');
+      });
+      
+      const sectionId = result.current.data.customSections[0].id;
+      
+      act(() => {
+        result.current.addCustomSectionItem(sectionId);
+      });
+      
+      expect(result.current.data.customSections[0].items).toHaveLength(1);
+      expect(result.current.data.customSections[0].items[0].title).toBe('');
+    });
+
+    it('updates custom section item', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCustomSection('Projects');
+      });
+      
+      const sectionId = result.current.data.customSections[0].id;
+      
+      act(() => {
+        result.current.addCustomSectionItem(sectionId);
+      });
+      
+      const itemId = result.current.data.customSections[0].items[0].id;
+      
+      act(() => {
+        result.current.updateCustomSectionItem(sectionId, itemId, {
+          title: 'Project Alpha',
+          subtitle: 'Lead Developer',
+          description: 'Built amazing things'
+        });
+      });
+      
+      const item = result.current.data.customSections[0].items[0];
+      expect(item.title).toBe('Project Alpha');
+      expect(item.subtitle).toBe('Lead Developer');
+      expect(item.description).toBe('Built amazing things');
+    });
+
+    it('removes custom section item', () => {
+      const { result } = renderHook(() => useResume(), { wrapper });
+      
+      act(() => {
+        result.current.addCustomSection('Projects');
+      });
+      
+      const sectionId = result.current.data.customSections[0].id;
+      
+      act(() => {
+        result.current.addCustomSectionItem(sectionId);
+      });
+      
+      const itemId = result.current.data.customSections[0].items[0].id;
+      
+      act(() => {
+        result.current.removeCustomSectionItem(sectionId, itemId);
+      });
+      
+      expect(result.current.data.customSections[0].items).toHaveLength(0);
     });
   });
 
