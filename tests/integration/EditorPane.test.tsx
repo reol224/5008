@@ -121,7 +121,7 @@ describe('EditorPane', () => {
   });
 
   describe('section order', () => {
-    it('displays sections in correct order', () => {
+    it('displays all section headers', () => {
       renderWithProvider(<EditorPane />);
       
       const headers = ['Contact', 'Summary', 'Experience', 'Education'];

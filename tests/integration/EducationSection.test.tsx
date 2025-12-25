@@ -14,34 +14,19 @@ const renderWithProvider = (component: React.ReactElement) => {
 
 describe('EducationSection', () => {
   describe('rendering', () => {
-    it('renders education entries', () => {
+    it('renders education entry with all fields', () => {
       renderWithProvider(<EducationSection />);
       
+      // Institution
       expect(screen.getByDisplayValue('University of California, Berkeley')).toBeInTheDocument();
-    });
-
-    it('displays degree information', () => {
-      renderWithProvider(<EducationSection />);
-      
+      // Degree
       expect(screen.getByDisplayValue('Bachelor of Arts')).toBeInTheDocument();
-    });
-
-    it('displays field of study', () => {
-      renderWithProvider(<EducationSection />);
-      
+      // Field of study
       expect(screen.getByDisplayValue('Cognitive Science')).toBeInTheDocument();
-    });
-
-    it('displays date range', () => {
-      renderWithProvider(<EducationSection />);
-      
+      // Date range
       expect(screen.getByDisplayValue('2010')).toBeInTheDocument();
       expect(screen.getByDisplayValue('2014')).toBeInTheDocument();
-    });
-
-    it('displays GPA if available', () => {
-      renderWithProvider(<EducationSection />);
-      
+      // GPA
       expect(screen.getByDisplayValue('3.8')).toBeInTheDocument();
     });
 
@@ -57,13 +42,15 @@ describe('EducationSection', () => {
       const user = userEvent.setup();
       renderWithProvider(<EducationSection />);
       
+      const initialInputs = screen.getAllByRole('textbox');
+      const initialCount = initialInputs.length;
+      
       const addButton = screen.getByText('Add Education');
       await user.click(addButton);
       
-      // Should have added a new education entry
-      // Look for empty input fields or increased count
+      // Should have added a new education entry with more inputs
       const inputs = screen.getAllByRole('textbox');
-      expect(inputs.length).toBeGreaterThan(5); // Original 5 + new empty ones
+      expect(inputs.length).toBeGreaterThan(initialCount);
     });
   });
 
@@ -136,14 +123,6 @@ describe('EducationSection', () => {
   });
 
   describe('removing education', () => {
-    it('has remove button for education entries', () => {
-      renderWithProvider(<EducationSection />);
-      
-      // Find remove buttons (X icons)
-      const buttons = screen.getAllByRole('button');
-      expect(buttons.length).toBeGreaterThan(1); // At least add and remove buttons
-    });
-
     it('removes education when delete clicked', async () => {
       const user = userEvent.setup();
       renderWithProvider(<EducationSection />);
@@ -221,39 +200,6 @@ describe('EducationSection', () => {
       
       // Add button should still be present in empty state
       expect(screen.getByText('Add Education')).toBeInTheDocument();
-    });
-  });
-
-  describe('form fields', () => {
-    it('has institution input field', () => {
-      renderWithProvider(<EducationSection />);
-      
-      expect(screen.getByDisplayValue('University of California, Berkeley')).toBeInTheDocument();
-    });
-
-    it('has degree input field', () => {
-      renderWithProvider(<EducationSection />);
-      
-      expect(screen.getByDisplayValue('Bachelor of Arts')).toBeInTheDocument();
-    });
-
-    it('has field of study input', () => {
-      renderWithProvider(<EducationSection />);
-      
-      expect(screen.getByDisplayValue('Cognitive Science')).toBeInTheDocument();
-    });
-
-    it('has date fields', () => {
-      renderWithProvider(<EducationSection />);
-      
-      expect(screen.getByDisplayValue('2010')).toBeInTheDocument();
-      expect(screen.getByDisplayValue('2014')).toBeInTheDocument();
-    });
-
-    it('has optional GPA field', () => {
-      renderWithProvider(<EducationSection />);
-      
-      expect(screen.getByDisplayValue('3.8')).toBeInTheDocument();
     });
   });
 });
