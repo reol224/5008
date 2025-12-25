@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { SummarySection } from '@/components/resume-builder/sections/SummarySection';
 import { ResumeProvider } from '@/contexts/ResumeContext';
@@ -79,60 +79,52 @@ describe('SummarySection', () => {
       expect(screen.getByText('5/500')).toBeInTheDocument();
     });
 
-    it('shows warning state when approaching limit', async () => {
-      const user = userEvent.setup();
+    it('shows warning state when approaching limit', () => {
       renderWithProvider(<SummarySection />);
       
       const textarea = screen.getByRole('textbox');
-      await user.clear(textarea);
       
-      // Type text over 400 characters (warning threshold)
+      // Set value directly with fireEvent for long text (much faster than userEvent.type)
       const longText = 'A'.repeat(420);
-      await user.type(textarea, longText);
+      fireEvent.change(textarea, { target: { value: longText } });
       
       // Counter should have warning class
       const counter = screen.getByText('420/500');
       expect(counter).toHaveClass('text-amber-500');
     });
 
-    it('shows error state when exceeding limit', async () => {
-      const user = userEvent.setup();
+    it('shows error state when exceeding limit', () => {
       renderWithProvider(<SummarySection />);
       
       const textarea = screen.getByRole('textbox');
-      await user.clear(textarea);
       
-      // Type text over 500 characters
+      // Set value directly with fireEvent for long text
       const longText = 'A'.repeat(510);
-      await user.type(textarea, longText);
+      fireEvent.change(textarea, { target: { value: longText } });
       
       // Counter should have error class
       const counter = screen.getByText('510/500');
       expect(counter).toHaveClass('text-red-500');
     });
 
-    it('shows warning message when approaching limit', async () => {
-      const user = userEvent.setup();
+    it('shows warning message when approaching limit', () => {
       renderWithProvider(<SummarySection />);
       
       const textarea = screen.getByRole('textbox');
-      await user.clear(textarea);
       
       const longText = 'A'.repeat(420);
-      await user.type(textarea, longText);
+      fireEvent.change(textarea, { target: { value: longText } });
       
       expect(screen.getByText(/getting long/i)).toBeInTheDocument();
     });
 
-    it('shows error message when exceeding limit', async () => {
-      const user = userEvent.setup();
+    it('shows error message when exceeding limit', () => {
       renderWithProvider(<SummarySection />);
       
       const textarea = screen.getByRole('textbox');
-      await user.clear(textarea);
       
       const longText = 'A'.repeat(510);
-      await user.type(textarea, longText);
+      fireEvent.change(textarea, { target: { value: longText } });
       
       expect(screen.getByText(/too long/i)).toBeInTheDocument();
     });
