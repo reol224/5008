@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EducationSection } from '@/components/resume-builder/sections/EducationSection';
 import { ResumeProvider } from '@/contexts/ResumeContext';
@@ -145,15 +145,34 @@ describe('EducationSection', () => {
     });
 
     it('removes education when delete clicked', async () => {
+      const user = userEvent.setup();
       renderWithProvider(<EducationSection />);
       
       // Verify initial state
       expect(screen.getByDisplayValue('University of California, Berkeley')).toBeInTheDocument();
       
-      // Find remove buttons
-      const buttons = screen.getAllByRole('button');
-      // At least one remove button should exist
-      expect(buttons.length).toBeGreaterThan(1);
+      // Count initial buttons
+      const initialButtons = screen.getAllByRole('button');
+      const initialButtonCount = initialButtons.length;
+      
+      // Find remove buttons (filter for delete/remove buttons)
+      const removeButtons = initialButtons.filter(btn => 
+        btn.classList.contains('hover:text-destructive') ||
+        btn.getAttribute('aria-label')?.includes('remove') ||
+        btn.querySelector('svg')
+      );
+      
+      // Click the first remove button (should remove the first education entry)
+      await user.click(removeButtons[0]);
+      
+      // Assert the education entry is removed
+      await waitFor(() => {
+        expect(screen.queryByDisplayValue('University of California, Berkeley')).not.toBeInTheDocument();
+      });
+      
+      // Verify button count decreased
+      const remainingButtons = screen.getAllByRole('button');
+      expect(remainingButtons.length).toBeLessThan(initialButtonCount);
     });
   });
 

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { EditorPane } from '@/components/resume-builder/EditorPane';
 import { ResumeProvider } from '@/contexts/ResumeContext';
@@ -62,11 +62,27 @@ describe('EditorPane', () => {
       const user = userEvent.setup();
       renderWithProvider(<EditorPane />);
       
-      // Find a collapsible section header
-      const contactHeader = screen.getByText('Contact');
+      // Find a collapsible section header button (the button contains the section title)
+      const contactHeader = screen.getByText('Contact').closest('button');
       
       // Initially content should be visible
       expect(screen.getByDisplayValue('Alex Johnson')).toBeInTheDocument();
+      
+      // Click to collapse the section
+      await user.click(contactHeader!);
+      
+      // Content should be hidden after collapsing (AnimatePresence removes from DOM)
+      await waitFor(() => {
+        expect(screen.queryByDisplayValue('Alex Johnson')).not.toBeInTheDocument();
+      });
+      
+      // Click again to expand
+      await user.click(contactHeader!);
+      
+      // Content should be visible again
+      await waitFor(() => {
+        expect(screen.getByDisplayValue('Alex Johnson')).toBeInTheDocument();
+      });
     });
   });
 
@@ -132,8 +148,11 @@ describe('EditorPane', () => {
     it('has correct background', () => {
       const { container } = renderWithProvider(<EditorPane />);
       
-      // Editor pane should have background gradient
-      expect(container.firstChild).toBeInTheDocument();
+      // Editor pane should have background gradient class
+      const editorPane = container.firstChild as HTMLElement;
+      expect(editorPane).toHaveClass('bg-gradient-to-b');
+      expect(editorPane.className).toContain('from-[#FAFAF9]');
+      expect(editorPane.className).toContain('to-[#F5F5F4]');
     });
   });
 

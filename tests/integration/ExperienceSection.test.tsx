@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, within, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ExperienceSection } from '@/components/resume-builder/sections/ExperienceSection';
 import { ResumeProvider } from '@/contexts/ResumeContext';
@@ -140,10 +140,28 @@ describe('ExperienceSection', () => {
       // Find the first experience entry
       expect(screen.getByDisplayValue('TechCorp Inc.')).toBeInTheDocument();
       
-      // Find and click remove button
-      const removeButtons = screen.getAllByRole('button');
-      // The X buttons should be present
-      expect(removeButtons.length).toBeGreaterThan(0);
+      // Count initial buttons
+      const initialButtons = screen.getAllByRole('button');
+      const initialButtonCount = initialButtons.length;
+      
+      // Find remove buttons (filter for delete/remove buttons - typically have hover:text-destructive or contain an X icon)
+      const removeButtons = initialButtons.filter(btn => 
+        btn.classList.contains('hover:text-destructive') ||
+        btn.getAttribute('aria-label')?.includes('remove') ||
+        btn.querySelector('svg')
+      );
+      
+      // Click the first remove button to remove the first experience entry
+      await user.click(removeButtons[0]);
+      
+      // Assert the experience entry is removed
+      await waitFor(() => {
+        expect(screen.queryByDisplayValue('TechCorp Inc.')).not.toBeInTheDocument();
+      });
+      
+      // Verify button count decreased
+      const remainingButtons = screen.getAllByRole('button');
+      expect(remainingButtons.length).toBeLessThan(initialButtonCount);
     });
 
     it('removes highlight when delete button clicked', async () => {
