@@ -121,18 +121,16 @@ describe('EditorPane', () => {
   });
 
   describe('section order', () => {
-    it('displays all section headers', () => {
+    it('displays sections in correct order', () => {
       renderWithProvider(<EditorPane />);
       
-      const headers = ['Contact', 'Summary', 'Experience', 'Education'];
-      const headerElements = headers.map(h => screen.getByText(h));
+      const allHeaders = screen.getAllByRole('button').filter(el => 
+        ['Contact', 'Summary', 'Experience', 'Education', 'Skills'].includes(el.textContent?.trim() || '')
+      );
       
-      // All headers should exist
-      headerElements.forEach(el => {
-        expect(el).toBeInTheDocument();
-      });
-      // Skills appears multiple times
-      expect(screen.getAllByText('Skills').length).toBeGreaterThan(0);
+      // Verify sections appear in default order
+      const headerTexts = allHeaders.map(el => el.textContent?.trim());
+      expect(headerTexts.slice(0, 5)).toEqual(['Contact', 'Summary', 'Experience', 'Education', 'Skills']);
     });
   });
 
