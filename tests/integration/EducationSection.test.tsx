@@ -181,14 +181,45 @@ describe('EducationSection', () => {
       const user = userEvent.setup();
       renderWithProvider(<EducationSection />);
       
-      // Remove existing education
-      const buttons = screen.getAllByRole('button');
-      const removeButtons = buttons.filter(btn => 
+      // Verify initial education entry exists
+      expect(screen.getByDisplayValue('University of California, Berkeley')).toBeInTheDocument();
+      
+      // Find and click all remove buttons to clear education entries
+      let removeButtons = screen.getAllByRole('button').filter(btn => 
         btn.classList.contains('hover:text-destructive') ||
-        btn.getAttribute('aria-label')?.includes('remove')
+        btn.getAttribute('aria-label')?.includes('remove') ||
+        btn.querySelector('svg')
       );
       
-      // Add button should always be present
+      // Remove all education entries by clicking remove buttons
+      while (removeButtons.length > 1) { // Keep at least the Add button
+        const removeBtn = removeButtons.find(btn => 
+          !btn.textContent?.includes('Add')
+        );
+        if (!removeBtn) break;
+        
+        await user.click(removeBtn);
+        
+        // Wait for UI to update
+        await waitFor(() => {
+          const currentButtons = screen.getAllByRole('button');
+          expect(currentButtons.length).toBeLessThan(removeButtons.length + 1);
+        });
+        
+        // Refresh remove buttons list
+        removeButtons = screen.getAllByRole('button').filter(btn => 
+          btn.classList.contains('hover:text-destructive') ||
+          btn.getAttribute('aria-label')?.includes('remove') ||
+          btn.querySelector('svg')
+        );
+      }
+      
+      // Verify education entry was removed
+      await waitFor(() => {
+        expect(screen.queryByDisplayValue('University of California, Berkeley')).not.toBeInTheDocument();
+      });
+      
+      // Add button should still be present in empty state
       expect(screen.getByText('Add Education')).toBeInTheDocument();
     });
   });
