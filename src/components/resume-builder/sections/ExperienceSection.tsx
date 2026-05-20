@@ -64,7 +64,7 @@ export function ExperienceSection() {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3 md:space-y-4">
       <AnimatePresence mode="popLayout">
         {data.experience.map((exp) => (
           <motion.div
@@ -73,16 +73,16 @@ export function ExperienceSection() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="relative p-3 bg-white/30 rounded-md border border-black/[0.04] group"
+            className="relative p-2.5 md:p-3 bg-white/30 rounded-md border border-black/[0.04] group"
           >
             <button
               onClick={() => removeExperience(exp.id)}
-              className="absolute top-2 right-2 p-1 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
+              className="absolute top-2 right-2 p-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive"
             >
               <X className="w-3.5 h-3.5" />
             </button>
             
-            <div className="space-y-2">
+            <div className="space-y-2 pr-6 md:pr-0">
               <FloatingInput
                 label="Position"
                 value={exp.position}
@@ -97,7 +97,7 @@ export function ExperienceSection() {
                 onFocus={() => setEditingField(`experience.${exp.id}.company`)}
                 onBlur={() => setEditingField(null)}
               />
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <FloatingInput
                   label="Start Date"
                   value={exp.startDate}

@@ -163,7 +163,8 @@ describe('ExportButton', () => {
       
       const buttons = screen.getAllByRole('button');
       const button = buttons[0];
-      expect(button).toHaveClass('bottom-8', 'right-8');
+      // Mobile-first: bottom-20 on mobile (above tab bar), md:bottom-8 on desktop
+      expect(button).toHaveClass('bottom-20', 'md:bottom-8', 'right-4', 'md:right-8');
     });
 
     it('has rounded styling', () => {

@@ -168,14 +168,16 @@ describe('ContactSection', () => {
       renderWithProvider(<ContactSection />);
       
       const container = screen.getByDisplayValue('alex.johnson@email.com').closest('.grid');
-      expect(container).toHaveClass('grid-cols-2');
+      // Mobile-first: single column on mobile, 2 columns on sm+ screens
+      expect(container).toHaveClass('grid-cols-1', 'sm:grid-cols-2');
     });
 
     it('renders grid layout for linkedin and website', () => {
       renderWithProvider(<ContactSection />);
       
       const container = screen.getByDisplayValue('linkedin.com/in/alexjohnson').closest('.grid');
-      expect(container).toHaveClass('grid-cols-2');
+      // Mobile-first: single column on mobile, 2 columns on sm+ screens
+      expect(container).toHaveClass('grid-cols-1', 'sm:grid-cols-2');
     });
   });
 });

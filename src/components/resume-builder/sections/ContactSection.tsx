@@ -5,7 +5,7 @@ export function ContactSection() {
   const { data, updateContact, setEditingField } = useResume();
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-2 md:space-y-3">
       <FloatingInput
         label="Full Name"
         value={data.contact.fullName}
@@ -20,7 +20,7 @@ export function ContactSection() {
         onFocus={() => setEditingField('contact.title')}
         onBlur={() => setEditingField(null)}
       />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
         <FloatingInput
           label="Email"
           value={data.contact.email}
@@ -43,7 +43,7 @@ export function ContactSection() {
         onFocus={() => setEditingField('contact.location')}
         onBlur={() => setEditingField(null)}
       />
-      <div className="grid grid-cols-2 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 md:gap-3">
         <FloatingInput
           label="LinkedIn"
           value={data.contact.linkedin || ''}

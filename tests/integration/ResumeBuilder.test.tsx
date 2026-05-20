@@ -166,7 +166,8 @@ describe('ResumeBuilder', () => {
       // Multiple banners exist (app header and resume header)
       const headers = screen.getAllByRole('banner');
       const appHeader = headers[0];
-      expect(appHeader).toHaveClass('h-14');
+      // Mobile-first: h-12 on mobile, md:h-14 on desktop
+      expect(appHeader).toHaveClass('h-12', 'md:h-14');
     });
   });
 

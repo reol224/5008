@@ -38,8 +38,8 @@ export function ExportButton() {
         },
       }}
       className={cn(
-        "fixed bottom-8 right-8 z-30",
-        "flex items-center gap-2 px-5 py-3 rounded-full",
+        "fixed bottom-20 md:bottom-8 right-4 md:right-8 z-30",
+        "flex items-center gap-2 px-4 md:px-5 py-2.5 md:py-3 rounded-full",
         "bg-[#1A1A1A] text-white shadow-lg",
         "hover:bg-[#2A2A2A] transition-colors",
         "font-body text-sm font-medium",

@@ -182,13 +182,13 @@ export function EditorPane() {
 
   return (
     <div className="h-full flex flex-col bg-gradient-to-b from-[#FAFAF9] to-[#F5F5F4]">
-      <div className="p-6 border-b border-black/[0.06]">
-        <h1 className="font-display text-lg font-bold text-foreground">Resume Editor</h1>
-        <p className="font-mono-ui text-xs font-light text-muted-foreground mt-1">
+      <div className="p-4 md:p-6 border-b border-black/[0.06]">
+        <h1 className="font-display text-base md:text-lg font-bold text-foreground">Resume Editor</h1>
+        <p className="font-mono-ui text-[10px] md:text-xs font-light text-muted-foreground mt-0.5 md:mt-1">
           Drag sections to reorder
         </p>
       </div>
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-3 md:p-4">
         <Reorder.Group
           axis="y"
           values={sections}
